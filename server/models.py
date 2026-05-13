@@ -17,7 +17,7 @@ class User(db.Model):
 
     @hybrid_property
     def password_hash(self):
-        return AttributeError('Password hashes may not be viewed.')
+        raise AttributeError("Password hashes may not be viewed.")
     
     @password_hash.setter
     def password_hash(self, password):
@@ -37,7 +37,7 @@ class User(db.Model):
 class Recipe(db.Model):
     __tablename__ = 'recipes'
     __table_args__ = (
-        db.CheckConstraint('length(instructions) >= 50')
+        db.CheckConstraint('length(instructions) >= 50'),
     )
     
     id = db.Column(db.Integer, primary_key = True)
