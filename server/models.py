@@ -60,6 +60,6 @@ class RecipeSchema(Schema):
     id = fields.Int()
     title = fields.String()
     instructions = fields.String()
-    minutes_to_completed = fields.Int()
+    minutes_to_complete = fields.Int()
 
     user = fields.Nested(UserSchema(exclude=('recipes',)))

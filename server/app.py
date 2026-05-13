@@ -7,6 +7,17 @@ from sqlalchemy.exc import IntegrityError
 from config import app, db, api
 from models import User, Recipe, UserSchema, RecipeSchema
 
+@app.before_request
+def check_if_logged_in():
+    open_access_list = [
+        'signup',
+        'login',
+        'check_session'
+    ]
+
+    if (request.endpoint) not in open_access_list and (not session.get('user_id')):
+        return {'error': '401 Unauthorized'}, 401
+
 class Signup(Resource):
     def post(self):
         request_json = request.get_json()
@@ -55,10 +66,31 @@ class Logout(Resource):
             return {}, 401
         
         return {}, 401
-        
 
 class RecipeIndex(Resource):
-    pass
+    
+    # view recipes
+    def get(self):
+        recipes = [RecipeSchema().dump(recipe) for recipe in Recipe.query.all()]
+
+        return recipes, 200
+    
+    # create recipe
+    def post(self):
+        request_json = request.get_json()
+
+        recipe = Recipe(
+            user_id=session['user_id'],
+            title = request_json.get('title'),
+            instructions = request_json.get('instructions'),
+            minutes_to_complete = request_json.get('minutes_to_complete')
+        )
+        try:
+            db.session.add(recipe)
+            db.session.commit()
+            return RecipeSchema().dump(recipe), 201
+        except IntegrityError:
+            return {'error': '422 Unprocessable Entity'}, 422
 
 api.add_resource(Signup, '/signup', endpoint='signup')
 api.add_resource(CheckSession, '/check_session', endpoint='check_session')
