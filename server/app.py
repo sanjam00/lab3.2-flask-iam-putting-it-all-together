@@ -28,13 +28,34 @@ class Signup(Resource):
             return {'error': '422 Unprocessable Entity'}, 422
 
 class CheckSession(Resource):
-    pass
+    def get(self):
+        if session.get('user_id'):
+            user = User.query.filter(User.id == session['user_id']).first()
+            return UserSchema().dump(user), 200
+        
+        return {}, 401
 
 class Login(Resource):
-    pass
+    def post(self):
+        username = request.get_json()['username']
+        password  = request.get_json()['password']
+
+        user = User.query.filter(User.username == username).first()
+
+        if user and user.authenticate(password):
+            session['user_id'] = user.id
+            return UserSchema().dump(user), 200
+        
+        return {'error': '401 Unauthorized'}, 401
 
 class Logout(Resource):
-    pass
+    def delete(self):
+        if session.get('user_id'):
+            session['user_id'] = None
+            return {}, 401
+        
+        return {}, 401
+        
 
 class RecipeIndex(Resource):
     pass
